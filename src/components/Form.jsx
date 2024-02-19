@@ -1,21 +1,23 @@
 import { useState } from "react";
-import Step1 from "./Step1";
-import Step2 from "./Step2";
+import Step from "./Step";
 
 const FIRST_STEP = 1;
 
 const Form = () => {
   const [step, setStep] = useState(FIRST_STEP);
-  const [name, setName] = useState("");
-  const [favFood, setFavFood] = useState("");
   const [error, setError] = useState("");
+  const [formData, setFormData] = useState({});
+
+  const updateFromInput = (name, value) => {
+    const newData = { [name]: value };
+
+    setFormData((oldData) => {
+      const updatedData = { ...oldData, ...newData };
+      return updatedData;
+    });
+  };
 
   const nextStep = () => {
-    const isIncompleteField = (step === 1 && !name) || (step === 2 && !favFood);
-    if (isIncompleteField) {
-      setError("Complete this field!");
-      return;
-    }
     setError("");
     setStep((prevStep) => prevStep + 1);
   };
@@ -28,32 +30,23 @@ const Form = () => {
   const startOver = () => {
     setError("");
     setStep(FIRST_STEP);
-    setName("");
-    setFavFood("");
+    setFormData({});
   };
 
   const formSteps = () => {
-    if (step === 1) {
-      return (
-        <>
-          <Step1 error={error} name={name} setName={setName}></Step1>
-          <button onClick={() => nextStep()}>Next step</button>
-        </>
-      );
-    }
-    if (step === 2) {
-      return (
-        <>
-          <Step2
-            error={error}
-            favFood={favFood}
-            setFavFood={setFavFood}
-          ></Step2>
-          <button onClick={() => prevStep()}>Previous step</button>
-          <button onClick={() => nextStep()}>Submit</button>
-        </>
-      );
-    }
+    return (
+      <>
+        <Step
+          stepNum={step}
+          formData={formData}
+          updateInput={updateFromInput}
+        ></Step>
+        {step > 1 && <button onClick={() => prevStep()}>Previous step</button>}
+        <button onClick={() => nextStep()}>
+          {step < 3 ? "Next step" : "Submit"}
+        </button>
+      </>
+    );
   };
 
   return (
@@ -61,8 +54,8 @@ const Form = () => {
       {step === 3 ? (
         <>
           <p>
-            {name}
-            {"'"}s favorite food is {favFood}!
+            {formData.name}
+            {"'"}s favorite food is {formData.food}!
           </p>
           <button onClick={() => startOver()}>Start over</button>
         </>
